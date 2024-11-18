@@ -19,8 +19,8 @@ class Logical:
         x_qreg (QuantumRegister): Ancillary qubits for X measurements.
         l_qregs (list): List of all logical qubit registers [d_qreg, z_qreg, x_qreg].
         m_creg (ClassicalRegister): Classical register for measurement results.
-        z_cregs (list): List to hold Z ancillary classical registers (optional extension).
-        x_cregs (list): List to hold X ancillary classical registers (optional extension).
+        z_cregs (list): List to hold Z ancillary classical registers.
+        x_cregs (list): List to hold X ancillary classical registers.
 
     Methods:
         idx_to_coord(idx: int) -> tuple:
@@ -32,11 +32,11 @@ class Logical:
         q(col: int, row: int) -> Qubit:
             Accesses a data qubit at a specific coordinate (col, row).
 
-        anc_z_q(inp: tuple) -> Qubit:
-            Accesses an ancillary qubit for Z measurement at a specific coordinate.
+        anc_z_q(col: int, row: int) -> Qubit:
+            Accesses an ancillary qubit for Z stabilizers given a qubit position.
 
-        anc_x_q(inp: tuple) -> Qubit:
-            Accesses an ancillary qubit for X measurement at a specific coordinate.
+        anc_x_q(col: int, row: int) -> Qubit:
+            Accesses an ancillary qubit for X stabilizers given a qubit position.
     """
 
     def __init__(self, dim: tuple[int] = (3, 3), name: str = "0") -> None:
@@ -94,7 +94,7 @@ class Logical:
         """
         return self.d_qreg[self.coord_to_idx((col, row))]
 
-    def anc_z_q(self, inp: tuple) -> Qubit:
+    def anc_z_q(self, col: int, row: int) -> Qubit:
         """
         Accesses an ancillary qubit for Z measurement at a specific coordinate.
 
@@ -105,10 +105,10 @@ class Logical:
             Qubit: The ancillary Z qubit at the specified coordinate.
         """
         cols, rows = self.cols - 1, self.rows
-        idx = inp[0] * rows + inp[1]
+        idx = col * rows + row
         return self.z_qreg[idx]
 
-    def anc_x_q(self, inp: tuple) -> Qubit:
+    def anc_x_q(self, col: int, row: int) -> Qubit:
         """
         Accesses an ancillary qubit for X measurement at a specific coordinate.
 
@@ -119,11 +119,11 @@ class Logical:
             Qubit: The ancillary X qubit at the specified coordinate.
         """
         cols, rows = self.cols, self.rows - 1
-        idx = inp[0] + inp[1] * cols
+        idx = col + row * cols
         return self.x_qreg[idx]
 
 
-class BaconShorCirq:
+class BaconShorCirc:
     """
     A class implementing the Bacon-Shor code in a quantum circuit using Qiskit.
     The class supports logical qubit initialization, syndrome extraction, 
@@ -320,11 +320,12 @@ class BaconShorCirq:
         self.qc.add_register(anc_creg)
         for col in range(cols-1):
             for row in range(rows):
-                self.qc.cx(l.q(col, row), l.anc_z_q((col, row)))
+                self.qc.cx(l.q(col, row), l.anc_z_q(col, row))
         for col in range(cols-1, 0, -1):
             for row in range(rows):
-                self.qc.cx(l.q(col, row), l.anc_z_q((col-1, row)))
+                self.qc.cx(l.q(col, row), l.anc_z_q(col-1, row))
         self.qc.measure(l.z_qreg, anc_creg)    
+        self.qc.reset(l.z_qreg)
         self.qc.barrier(l.d_qreg)
     
     def _x_gauges(self, logical1_idx: Union[int, str]) -> None:
@@ -337,12 +338,13 @@ class BaconShorCirq:
         self.qc.h(l.x_qreg)
         for row in range(rows-1):
             for col in range(cols):
-                self.qc.cx(l.anc_x_q((col, row)), l.q(col, row))
+                self.qc.cx(l.anc_x_q(col, row), l.q(col, row))
         for row in range(rows-1, 0, -1):
             for col in range(cols):
-                self.qc.cx(l.anc_x_q((col, row-1)), l.q(col, row))
+                self.qc.cx(l.anc_x_q(col, row-1), l.q(col, row))
         self.qc.h(l.x_qreg)
         self.qc.measure(l.x_qreg, anc_creg)
+        self.qc.reset(l.x_qreg)
         self.qc.barrier(l.d_qreg)
 
     def do_ec(self, logical_idx: Union[int, str]) -> None:
@@ -365,7 +367,7 @@ class BaconShorCirq:
         with self.qc.switch(creg) as case:
             for gauges_int in range(2**creg_len):
                 gauges_bin = f"{gauges_int:0{creg_len}b}"
-                sts = ''.join(str(reduce(lambda x, y: x ^ y, map(int, gauges_bin[i:i + m]))) for i in range(0, len(gauges_bin), m))
+                sts = ''.join(str(sum(map(int, gauges_bin[i:i + m])) % 2) for i in range(0, len(gauges_bin), m))
                 sts = int(sts, 2)
                 if sts in self.lookup_z.keys():
                     with case(gauges_int):
@@ -408,7 +410,7 @@ class BaconShorCirq:
         self.lookup_z = self._get_lookup_dict(n)
         self.lookup_x = self._get_lookup_dict(m)
     
-    def _get_lookup_dict(self, major_axis):
+    def _get_lookup_dict(self, major_axis) -> dict:
         max_e = (major_axis - 1) // 2
         all_combinations = np.array(np.meshgrid(*[[0, 1]] * major_axis)).T.reshape(-1, major_axis)
         valid_combinations = all_combinations[np.sum(all_combinations, axis=1) <= max_e]
