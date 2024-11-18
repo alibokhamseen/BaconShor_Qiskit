@@ -5,9 +5,37 @@ The Bacon-Shor Code is a quantum error correction scheme that provides a simple 
 My implementation corrects errors in a manner similar to repetition code. I force stabilizers to be 0s after extracting syndromes. This is always possible except for even distances when the number of errors is half the distance. In situations like this, it's 50% 50% chance. So, I simply do nothing.
 
 
+Markdown files on GitHub don't directly support LaTeX-style math (e.g., `\binom`). To properly format the mathematical expressions, you'll need to use plain text or embed math symbols directly using Unicode. Here’s an updated version that works in a GitHub `README.md`:
+
+---
+
 ### Note on Lookup Table Growth
 
-The lookup tables in this implementation grow combinatorially as \( \binom{n}{\frac{n-1}{2}} \), where \( n \) is the dimension of the logical grid. This growth represents the number of ways to select \( \frac{n-1}{2} \) elements from \( n \), making the tables scalable for small dimensions but computationally intensive for larger grids.
+The lookup tables in this implementation grow combinatorially as \(n \choose k\), where:
+
+- \(n\) is the dimension of the logical grid.
+- \(k = (n - 1) / 2\), representing half of \(n\) minus one.
+
+This growth corresponds to the number of ways to select \(k\) elements from \(n\). While the lookup tables are scalable for small dimensions, they become computationally intensive for larger grids due to the rapid growth of the combinatorial factor.
+
+---
+
+Alternatively, if you want to avoid Unicode or LaTeX issues entirely:
+
+---
+
+### Note on Lookup Table Growth
+
+The lookup tables in this implementation grow combinatorially as **C(n, (n-1)/2)**, where:
+
+- \(n\) is the dimension of the logical grid.
+- \((n-1)/2\) represents half of \(n\) minus one.
+
+This growth corresponds to the number of ways to select \((n-1)/2\) elements from \(n\). While the lookup tables are scalable for small dimensions, they become computationally intensive for larger grids due to the rapid growth of the combinatorial factor.
+
+---
+
+Either of these should display properly on GitHub without requiring external rendering tools.
 
 
 ## Features
