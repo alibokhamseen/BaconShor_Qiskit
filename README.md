@@ -7,7 +7,7 @@ My implementation corrects errors in a manner similar to repetition code. I forc
 
 ### Note on Lookup Table Growth
 
-The lookup tables in this implementation grow combinatorially as \( \binom{n}{\frac{n-1}{2}} \), where \( n \) is the dimension of the logical grid. This growth represents the number of ways to select \( \frac{n-1}{2} \) elements from \( n \), making the tables scalable for small dimensions but computationally intensive for larger grids. 
+The lookup tables in this implementation grow combinatorially as \( \binom{n}{\frac{n-1}{2}} \), where \( n \) is the dimension of the logical grid. This growth represents the number of ways to select \( \frac{n-1}{2} \) elements from \( n \), making the tables scalable for small dimensions but computationally intensive for larger grids.
 
 
 ## Features
