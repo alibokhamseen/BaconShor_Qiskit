@@ -14,7 +14,7 @@ Markdown files on GitHub don't directly support LaTeX-style math (e.g., `\binom`
 The lookup tables in this implementation grow combinatorially as \(n choose k\), where:
 
 - n is the dimension of the logical grid in one direction.
-- k = (n - 1) // 2\
+- k = (n - 1) // 2
 
 
 
