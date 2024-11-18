@@ -13,29 +13,9 @@ Markdown files on GitHub don't directly support LaTeX-style math (e.g., `\binom`
 
 The lookup tables in this implementation grow combinatorially as \(n \choose k\), where:
 
-- \(n\) is the dimension of the logical grid.
-- \(k = (n - 1) / 2\), representing half of \(n\) minus one.
+- \(n\) is the dimension of the logical grid in one direction.
+- \(k = (n - 1) / 2\)
 
-This growth corresponds to the number of ways to select \(k\) elements from \(n\). While the lookup tables are scalable for small dimensions, they become computationally intensive for larger grids due to the rapid growth of the combinatorial factor.
-
----
-
-Alternatively, if you want to avoid Unicode or LaTeX issues entirely:
-
----
-
-### Note on Lookup Table Growth
-
-The lookup tables in this implementation grow combinatorially as **C(n, (n-1)/2)**, where:
-
-- \(n\) is the dimension of the logical grid.
-- \((n-1)/2\) represents half of \(n\) minus one.
-
-This growth corresponds to the number of ways to select \((n-1)/2\) elements from \(n\). While the lookup tables are scalable for small dimensions, they become computationally intensive for larger grids due to the rapid growth of the combinatorial factor.
-
----
-
-Either of these should display properly on GitHub without requiring external rendering tools.
 
 
 ## Features
